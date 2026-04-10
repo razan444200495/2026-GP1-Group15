@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AFAQ | Discover Riyadh Events</title>
+  <style>
+    :root {
+      --bg-main: #f7f3ee;
+      --bg-soft: #efe7dd;
+      --bg-card: #fffdf9;
+      --text-main: #3d3128;
+      --text-soft: #7a6758;
+      --text-light: #fdf8f2;
+      --accent: #b8956a;
+      --accent-dark: #8e6f4f;
+      --accent-soft: #d8c3a8;
+      --border: rgba(122, 103, 88, 0.18);
+      --shadow: 0 14px 35px rgba(83, 61, 43, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, var(--bg-main) 0%, #f2ece4 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .page-shell {
+      width: min(1380px, 94%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(247, 243, 238, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .navbar {
+      min-height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 10px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .brand img {
+      width: 92px;
+      height: auto;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+
+    .brand-text strong {
+      font-size: 1.9rem;
+      letter-spacing: 1px;
+      color: var(--text-main);
+      font-weight: 800;
+    }
+
+    .brand-text span {
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      margin-top: 8px;
+      letter-spacing: 3px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      transition: 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .outline-btn,
+    .solid-btn,
+    .login-btn,
+    .signup-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      transition: 0.25s ease;
+      font-weight: 700;
+    }
+
+    .outline-btn {
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      border: 1px solid var(--accent-soft);
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .solid-btn {
+      padding: 12px 22px;
+      font-size: 0.95rem;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: var(--text-light);
+      box-shadow: 0 10px 22px rgba(142, 111, 79, 0.18);
+    }
+
+    .outline-btn:hover,
+    .solid-btn:hover,
+    .login-btn:hover,
+    .signup-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(83, 61, 43, 0.12);
+    }
+
+    .login-btn {
+      padding: 12px 22px;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--accent);
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .login-btn:hover {
+      background: rgba(216, 195, 168, 0.28);
+    }
+
+    .signup-btn {
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: var(--text-light);
+      box-shadow: 0 10px 22px rgba(142, 111, 79, 0.18);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px 6px 14px;
+      min-width: 210px;
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      width: 140px;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-soft);
+    }
+
+    .search-box button {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 92vh;
+      display: grid;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(58, 42, 31, 0.72) 20%, rgba(89, 62, 43, 0.42) 58%, rgba(184, 149, 106, 0.26) 100%),
+        url('hero-bj.jpg') center/cover no-repeat;
+      z-index: -2;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 75% 20%, rgba(255, 244, 229, 0.22), transparent 16%),
+        radial-gradient(circle at 82% 26%, rgba(216, 195, 168, 0.22), transparent 12%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 980px;
+      padding: 72px 0 96px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      margin-bottom: 22px;
+      border-radius: 999px;
+      background: rgba(255, 250, 244, 0.18);
+      border: 1px solid rgba(255, 248, 240, 0.34);
+      color: var(--text-light);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.9rem, 7vw, 5.8rem);
+      line-height: 1.04;
+      margin-bottom: 20px;
+      letter-spacing: -2px;
+      color: var(--text-light);
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: rgba(255, 248, 240, 0.9);
+      max-width: 700px;
+      margin-bottom: 32px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 42px;
+      max-width: 840px;
+    }
+
+    .stat-card {
+      background: rgba(255, 250, 244, 0.14);
+      border: 1px solid rgba(255, 248, 240, 0.18);
+      backdrop-filter: blur(8px);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(38, 26, 18, 0.12);
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      color: var(--text-light);
+    }
+
+    .stat-card span {
+      color: rgba(255, 248, 240, 0.86);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .filter-panel {
+      margin-top: 34px;
+      max-width: 980px;
+      background: rgba(255, 250, 244, 0.08);
+      border: 2px solid rgba(255, 248, 240, 0.88);
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 18px 35px rgba(38, 26, 18, 0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-block {
+      padding: 18px 30px 20px;
+      min-height: 98px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .filter-block + .filter-block {
+      border-left: 2px solid rgba(255, 248, 240, 0.82);
+    }
+
+    .filter-label {
+      font-size: 1rem;
+      color: rgba(255, 248, 240, 0.88);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .filter-select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding-right: 28px;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #ffffff 50%),
+        linear-gradient(135deg, #ffffff 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) calc(50% - 4px),
+        calc(100% - 12px) calc(50% - 4px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+    }
+
+    .filter-select option {
+      color: #1d1d1d;
+    }
+
+    .filter-go {
+      margin: 20px auto 0;
+      display: block;
+      width: 260px;
+      height: 74px;
+      border: none;
+      border-radius: 999px;
+      background: #fffaf4;
+      color: var(--text-main);
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(38, 26, 18, 0.14);
+      transition: transform 0.25s ease;
+    }
+
+    .filter-go:hover {
+      transform: translateY(-2px);
+    }
+
+    .section {
+      padding: 72px 0 34px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(2rem, 4.6vw, 4rem);
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 26px;
+    }
+
+    .event-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: transform 0.28s ease, box-shadow 0.28s ease;
+      pointer-events: none;
+    }
+
+    .event-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 22px 45px rgba(83, 61, 43, 0.14);
+    }
+
+    .event-image-wrap {
+      position: relative;
+      height: 260px;
+      overflow: hidden;
+      background: #f4ede5;
+    }
+
+    .event-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .event-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(61, 49, 40, 0.82);
+      color: #fffaf4;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .event-content {
+      padding: 20px 20px 24px;
+    }
+
+    .event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 0.92rem;
+    }
+
+    .event-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f3ece4;
+      color: var(--text-soft);
+      border: 1px solid rgba(184, 149, 106, 0.18);
+    }
+
+    .event-card h3 {
+      font-size: 1.45rem;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .event-card p {
+      color: var(--text-soft);
+      line-height: 1.75;
+      font-size: 0.98rem;
+      margin-bottom: 16px;
+    }
+
+    .event-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      color: var(--text-soft);
+      font-size: 0.94rem;
+      flex-wrap: wrap;
+    }
+
+    .location-tag,
+    .date-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .about-section {
+      position: relative;
+      margin-top: 90px;
+      padding: 90px 0;
+      overflow: hidden;
+    }
+
+    .about-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(20, 16, 12, 0.74), rgba(20, 16, 12, 0.74)),
+        url('about-bg.jpg') center/cover no-repeat;
+      z-index: -2;
+    }
+
+    .about-section::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(216, 195, 168, 0.14), transparent 38%);
+      z-index: -1;
+    }
+
+    .about-heading {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 36px;
+      color: var(--text-light);
+    }
+
+    .about-heading h2 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      margin-bottom: 14px;
+      letter-spacing: -1px;
+    }
+
+    .about-heading p {
+      color: rgba(255, 248, 240, 0.9);
+      line-height: 1.9;
+      font-size: 1rem;
+    }
+
+    .about-strip {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+    }
+
+    .info-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(14px);
+      border-radius: 30px;
+      padding: 34px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.22);
+    }
+
+    .info-box h3 {
+      font-size: 1.8rem;
+      margin-bottom: 18px;
+      color: var(--text-light);
+    }
+
+    .info-box p,
+    .info-box li {
+      color: rgba(255,255,255,0.88);
+      line-height: 1.9;
+      font-size: 1rem;
+    }
+
+    .info-box ul {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    footer {
+      background: #ede4da;
+      margin-top: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      padding: 42px 0 26px;
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .footer-brand {
+      max-width: 520px;
+    }
+
+    .footer-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .footer-logo-row img {
+      width: 60px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .footer-brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+    }
+
+    .footer-brand-text strong {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: 1px;
+    }
+
+    .footer-brand-text span {
+      font-size: 0.9rem;
+      letter-spacing: 3px;
+      color: var(--text-soft);
+      margin-top: 6px;
+    }
+
+    .footer-brand p,
+    .footer-links a,
+    .footer-contact p,
+    .footer-bottom {
+      color: var(--text-soft);
+      line-height: 1.9;
+      font-size: 0.96rem;
+    }
+
+    .footer-links,
+    .footer-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links h4,
+    .footer-contact h4 {
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+      color: var(--text-main);
+    }
+
+    .footer-links a {
+      width: fit-content;
+      transition: 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-dark);
+      transform: translateX(2px);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding: 18px 0 26px;
+      text-align: center;
+    }
+
+    @media (max-width: 1100px) {
+      .events-grid,
+      .about-strip,
+      .footer-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-brand {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .navbar {
+        min-height: auto;
+        padding: 18px 0;
+        flex-wrap: wrap;
+      }
+
+      .nav-links {
+        gap: 18px;
+      }
+
+      .events-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(92%, 1400px);
+      }
+
+      .hero {
+        min-height: 82vh;
+      }
+
+      .hero-content {
+        padding: 48px 0 70px;
+      }
+
+      .hero h1 {
+        letter-spacing: -1px;
+      }
+
+      .section-header {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .events-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .nav-links {
+        width: 100%;
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-block + .filter-block {
+        border-left: none;
+        border-top: 2px solid rgba(255, 248, 240, 0.82);
+      }
+
+      .filter-go {
+        width: 100%;
+      }
+
+      .brand img {
+        width: 72px;
+        height: auto;
+      }
+
+      .brand-text strong {
+        font-size: 1.45rem;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .search-box input {
+        width: 100%;
+      }
+
+      .about-section {
+        padding: 72px 0;
+      }
+
+      .footer-logo-row img {
+        width: 52px;
+      }
+
+      .footer-brand-text strong {
+        font-size: 1.7rem;
+      }
+      
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="page-shell navbar">
+      <div class="brand">
+        <img src="logo.png" alt="AFAQ Logo">
+        <div class="brand-text">
+          <span>RIYADH EVENTS</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#featured">Events</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search by event name" />
+          <button id="searchBtn" aria-label="Search">⌕</button>
+        </div>
+        <a href="#contact" class="outline-btn">Learn More</a>
+        <a href="login.html" class="login-btn">Login</a>
+        <a href="signup.html" class="signup-btn">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="page-shell">
+        <div class="hero-content">
+          <div class="eyebrow">Riyadh • Curated Local Experiences</div>
+          <h1>Elevating Riyadh Experiences, Crafting Memories.</h1>
+          <p>
+            AFAQ brings together a wide range of activities, allowing users to easily browse, search, and access event information through a clear and organized experience.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="#featured" class="solid-btn">Explore Events</a>
+            <a href="#about" class="outline-btn">About AFAQ</a>
+          </div>
+
+          <div class="mini-stats">
+            <div class="stat-card">
+              <strong>Explore Riyadh</strong>
+              <span>Discover a wide range of events happening across Riyadh in one unified platform.</span>
+            </div>
+            <div class="stat-card">
+              <strong>Personalized Experience</strong>
+              <span>Get event suggestions and browsing experience tailored to your interests and preferences.</span>
+            </div>
+            <div class="stat-card">
+              <strong>Track Events</strong>
+              <span>Keep track of your favorite events and plan your schedule.</span>
+            </div>
+          </div>
+
+          <div class="filter-panel">
+            <div class="filter-row">
+              <div class="filter-block">
+                <label class="filter-label" for="eventType">Event type</label>
+                <select id="eventType" class="filter-select">
+                  <option value="all">All Events</option>
+                  <option value="arts">Arts & Culture</option>
+                  <option value="festival">Festivals & Seasons</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="family">Family & Children</option>
+                  <option value="lifestyle">Food, Shopping & Lifestyle</option>
+                </select>
+              </div>
+
+              <div class="filter-block">
+                <label class="filter-label" for="eventWhen">When</label>
+                <select id="eventWhen" class="filter-select">
+                  <option value="all">All Dates</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="long">Long-running</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button class="filter-go" id="filterGo" type="button">Go</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="featured">
+      <div class="page-shell">
+        <div class="section-header">
+          <div>
+            <h2>Featured Riyadh Events</h2>
+          </div>
+        </div>
+
+        <div class="events-grid" id="eventsGrid"></div>
+      </div>
+    </section>
+
+    <section class="about-section" id="about">
+      <div class="page-shell">
+        <div class="about-heading">
+          <h2>About AFAQ</h2>
+          <p>
+            AFAQ is built to simplify event discovery in Riyadh by bringing scattered event information into one unified and engaging platform.
+          </p>
+        </div>
+
+        <div class="about-strip">
+          <div class="info-box">
+            <h3>Why AFAQ</h3>
+            <ul>
+              <li>• AFAQ provides a more personalized experience by recommending events based on user interests and activity.</li>
+              <li>• It supports features such as saving favorite events and organizing them into a personal schedule.</li>
+              <li>• It transforms event discovery into a seamless experience, helping users stay connected with what’s happening around them in Riyadh.</li>
+            </ul>
+          </div>
+
+          <div class="info-box">
+            <h3>Our Vision</h3>
+            <p>
+              AFAQ helps users explore and find events without switching between multiple websites and sources. Through a clean interface, curated previews, and intuitive browsing tools, the platform creates a smarter and more enjoyable way to discover Riyadh experiences.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <div class="page-shell footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo-row">
+          <img src="logo.png" alt="AFAQ Logo">
+          <div class="footer-brand-text">
+            <strong>AFAQ</strong>
+            <span>RIYADH EVENTS</span>
+          </div>
+        </div>
+        <p>
+          AFAQ is designed to introduce visitors to Riyadh events through a modern and welcoming experience.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <a href="#home">Home</a>
+        <a href="#featured">Events</a>
+        <a href="#about">About</a>
+      </div>
+
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p>Email: info@afaq.com</p>
+        <p>Location: Riyadh, Saudi Arabia</p>
+        <p>Availability: 24/7 Event Browsing</p>
+      </div>
+    </div>
+
+    <div class="page-shell footer-bottom">
+      © 2026 AFAQ. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    const selectedEventNames = [
+      "Boulevard City",
+      "Diriyah Nights",
+      "Al-Bajiri overlook",
+      "Diriyah Contemporary Art Biennial 2026",
+      "Via Riyadh",
+      "A journey to space"
+    ];
+
+    const eventsGrid = document.getElementById("eventsGrid");
+    const filterGo = document.getElementById("filterGo");
+    const eventType = document.getElementById("eventType");
+    const eventWhen = document.getElementById("eventWhen");
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+
+    let loadedEvents = [];
+
+    function normalizeCategory(category) {
+      const value = (category || "").toLowerCase();
+
+      if (value.includes("arts")) return "arts";
+      if (value.includes("festival")) return "festival";
+      if (value.includes("season")) return "festival";
+      if (value.includes("family")) return "family";
+      if (value.includes("food")) return "lifestyle";
+      if (value.includes("restaurant")) return "lifestyle";
+      if (value.includes("shopping")) return "lifestyle";
+      if (value.includes("lifestyle")) return "lifestyle";
+      if (value.includes("entertainment")) return "entertainment";
+      if (value.includes("travel")) return "entertainment";
+
+      return "all";
+    }
+
+    function normalizeWhen(dateText) {
+      const text = (dateText || "").toLowerCase();
+
+      if (text.includes("2025")) return "2025";
+      if (text.includes("2026")) return "2026";
+      if (text.includes("2027") || text.includes("2030")) return "long";
+      if (text.includes("riyadh")) return "all";
+
+      return "all";
+    }
+
+    function getBadgeText(title, category) {
+      const t = (title || "").toLowerCase();
+      const c = (category || "").toLowerCase();
+
+      if (t.includes("diriyah") || c.includes("arts")) return "Cultural";
+      if (t.includes("boulevard")) return "Featured";
+      if (c.includes("family")) return "Family";
+      return "Featured";
+    }
+
+    function getLocation(event) {
+      const raw = event["Font.4"] || "";
+      if (raw.trim()) {
+        return raw.replace(/^•\s*/, "");
+      }
+      return "Riyadh";
+    }
+
+    function getDescription(event) {
+      const category = event["Font"] || "Event";
+      const price = event["Font.2"] || "";
+      const dateText = event["Font.1"] || event["Start Date"] || "Date not available";
+
+      if (price) return `${category} • ${price}`;
+      return `${category} • ${dateText}`;
+    }
+
+    function createEventCard(event) {
+      const image = event["W-full Image"] || "https://via.placeholder.com/600x400?text=Event+Image";
+      const title = event["W-full Description"] || "Riyadh Event";
+      const category = event["Font"] || "Event";
+      const dateText = event["Font.1"] || event["Start Date"] || "Date not available";
+      const location = getLocation(event);
+
+      const badgeText = getBadgeText(title, category);
+      const shortDescription = getDescription(event);
+
+      return `
+        <article class="event-card">
+          <div class="event-image-wrap">
+            <img src="${image}" alt="${title}">
+            <span class="event-badge">${badgeText}</span>
+          </div>
+
+          <div class="event-content">
+            <div class="event-meta">
+              <span class="event-pill">${category}</span>
+              <span class="event-pill">Riyadh</span>
+            </div>
+
+            <h3>${title}</h3>
+            <p>${shortDescription}</p>
+
+            <div class="event-bottom">
+              <span class="date-tag">📅 ${dateText}</span>
+              <span class="location-tag">📍 ${location}</span>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderEvents(events) {
+      if (!events.length) {
+        eventsGrid.innerHTML = `
+          <p style="color: #7a6758; font-size: 1rem;">
+            No events found.
+          </p>
+        `;
+        return;
+      }
+
+      eventsGrid.innerHTML = events.map(createEventCard).join("");
+    }
+
+    function applyFilters() {
+      const selectedType = eventType.value;
+      const selectedWhen = eventWhen.value;
+      const keyword = searchInput.value.trim().toLowerCase();
+
+      const filtered = loadedEvents.filter(event => {
+        const categoryKey = normalizeCategory(event["Font"]);
+        const whenKey = normalizeWhen(event["Font.1"] || event["Start Date"]);
+        const title = (event["W-full Description"] || "").toLowerCase();
+
+        const typeMatch = selectedType === "all" || categoryKey === selectedType;
+        const whenMatch = selectedWhen === "all" || whenKey === selectedWhen;
+        const searchMatch = !keyword || title.includes(keyword);
+
+        return typeMatch && whenMatch && searchMatch;
+      });
+
+      renderEvents(filtered);
+
+      document.getElementById("featured").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    async function loadSelectedEvents() {
+      try {
+        const response = await fetch("Book1_updated.json");
+        const data = await response.json();
+
+        loadedEvents = selectedEventNames
+          .map(name => data.find(event => event["W-full Description"] === name))
+          .filter(Boolean);
+
+        renderEvents(loadedEvents);
+      } catch (error) {
+        eventsGrid.innerHTML = `
+          <p style="color: #7a6758; font-size: 1rem;">
+            Unable to load event data.
+          </p>
+        `;
+        console.error("Error loading events:", error);
+      }
+    }
+
+    filterGo.addEventListener("click", applyFilters);
+    searchBtn.addEventListener("click", applyFilters);
+
+    searchInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        applyFilters();
+      }
+    });
+
+    loadSelectedEvents();
+  </script>
+</body>
+</html>
