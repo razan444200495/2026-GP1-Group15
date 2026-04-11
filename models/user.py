@@ -4,10 +4,10 @@ from extensions import db, login_manager
 
 
 class User(db.Model, UserMixin):
-    __tablename__ = "users"
+    __tablename__ = "user"
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(120), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, primary_key=True)
+    fullname = db.Column(db.String(120), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default="user")
@@ -17,6 +17,9 @@ class User(db.Model, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def get_id(self):
+        return str(self.user_id)
 
 
 @login_manager.user_loader
