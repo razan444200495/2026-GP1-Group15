@@ -4,6 +4,12 @@ from models.event import Event
 events_bp = Blueprint("events", __name__)
 
 
+@events_bp.route("/")
+def home():
+    events = Event.query.limit(6).all()
+    return render_template("index.html", events=events)
+
+
 @events_bp.route("/events")
 def events_page():
     events = Event.query.all()
