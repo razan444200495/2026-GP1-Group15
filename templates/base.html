@@ -471,11 +471,12 @@
         <a href="#contact">Contact</a>
       </nav>
 
-      <div class="nav-actions">
-        <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
-        <a href="{{ url_for('auth.register') }}" class="signup-btn">Sign Up</a>
-      </div>
-    </div>
+      {% if request.endpoint not in ['auth.login', 'auth.register'] %}
+<div class="nav-actions">
+  <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
+  <a href="#" class="signup-btn">Sign Up</a>
+</div>
+{% endif %}
   </header>
 
   <main>
