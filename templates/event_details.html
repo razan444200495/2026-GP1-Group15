@@ -1,88 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ event.title }} - AFAQ</title>
-    <style>
-        body{
-            font-family: Arial, sans-serif;
-            background:#f5f5f5;
-            margin:0;
-            padding:30px;
-        }
+{% extends "base.html" %}
 
-        .details-container{
-            max-width:900px;
-            margin:auto;
-            background:white;
-            border-radius:14px;
-            padding:25px;
-            box-shadow:0 2px 10px rgba(0,0,0,0.1);
-        }
+{% block title %}{{ event.title }} - AFAQ{% endblock %}
 
-        .details-container img{
-            width:100%;
-            max-height:400px;
-            object-fit:cover;
-            border-radius:12px;
-            margin-bottom:20px;
-        }
+{% block content %}
+<div class="page-shell">
+  <div class="details-container">
+    {% if event.image %}
+      <img src="{{ event.image }}" alt="{{ event.title }}">
+    {% else %}
+      <img src="https://via.placeholder.com/900x400?text=Event+Image" alt="Event Image">
+    {% endif %}
 
-        h1{
-            margin-bottom:15px;
-        }
+    <div class="details-body">
+      <h1>{{ event.title }}</h1>
+      <p><strong>Category:</strong> {{ event.category }}</p>
+      <p><strong>City:</strong> {{ event.city }}</p>
+      <p><strong>Date:</strong> {{ event.date }}</p>
+      <p><strong>Time:</strong> {{ event.time if event.time else 'Not available' }}</p>
+      <p><strong>Location:</strong> {{ event.location if event.location else 'Not available' }}</p>
+      <p><strong>Price:</strong> {{ event.price if event.price else 'Not available' }}</p>
+      <p><strong>Description:</strong> {{ event.description if event.description else 'No description available' }}</p>
 
-        p{
-            font-size:18px;
-            line-height:1.6;
-        }
-
-        .btn{
-            display:inline-block;
-            margin-top:20px;
-            background:#1e88e5;
-            color:white;
-            padding:12px 18px;
-            border-radius:8px;
-            text-decoration:none;
-        }
-
-        .back-link{
-            display:inline-block;
-            margin-bottom:20px;
-            color:#1e88e5;
-            text-decoration:none;
-            font-weight:bold;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="details-container">
-        <a href="{{ url_for('events.events_page') }}" class="back-link">← Back to Events</a>
-
-        {% if event.image %}
-            <img src="{{ event.image }}" alt="{{ event.title }}">
-        {% else %}
-            <img src="https://via.placeholder.com/900x400?text=No+Image" alt="No Image">
-        {% endif %}
-
-        <h1>{{ event.title }}</h1>
-
-        <p><strong>Category:</strong> {{ event.category }}</p>
-        <p><strong>City:</strong> {{ event.city }}</p>
-        <p><strong>Date:</strong> {{ event.date }}</p>
-        <p><strong>Time:</strong> {{ event.time if event.time else 'Not available' }}</p>
-        <p><strong>Location:</strong> {{ event.location if event.location else 'Not available' }}</p>
-        <p><strong>Price:</strong> {{ event.price if event.price else 'Not available' }}</p>
-        <p><strong>Description:</strong> {{ event.description if event.description else 'No description available' }}</p>
-        <p><strong>Source:</strong> {{ event.source }}</p>
-
-        {% if event.official_link %}
-            <a href="{{ event.official_link }}" target="_blank" class="btn">Official Event Link</a>
-        {% endif %}
+      {% if event.official_link %}
+      <div style="margin-top: 20px;">
+        <a href="{{ event.official_link }}" target="_blank" class="primary-btn">Open Official Event Link</a>
+      </div>
+      {% endif %}
     </div>
-
-</body>
-</html>
+  </div>
+</div>
+{% endblock %}
