@@ -464,19 +464,28 @@
         </div>
       </div>
 
-      <nav class="nav-links">
-        <a href="{{ url_for('events.home') }}">Home</a>
-        <a href="{{ url_for('events.events_page') }}">Events</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-      </nav>
+{% if current_user.is_authenticated and current_user.role == 'admin' and request.endpoint not in ['auth.login', 'auth.signup'] %}
+        <nav class="nav-links">
+          <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('admin.profile') }}">Profile</a>
+        </nav>
 
-      {% if request.endpoint not in ['auth.login', 'auth.register'] %}
-<div class="nav-actions">
-  <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
-  <a href="#" class="signup-btn">Sign Up</a>
-</div>
-{% endif %}
+      {% else %}
+
+        <nav class="nav-links">
+          <a href="{{ url_for('events.home') }}">Home</a>
+          <a href="{{ url_for('events.events_page') }}">Events</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+{% if request.endpoint not in ['auth.login', 'auth.signup'] %}
+          <div class="nav-actions">
+            <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
+<a href="{{ url_for('auth.signup') }}" class="signup-btn">Sign Up</a>          </div>
+        {% endif %}
+
+      {% endif %}
   </header>
 
   <main>
@@ -506,17 +515,11 @@
 
       <div class="footer-contact">
         <h4>Contact</h4>
-        <p>Email: info@afaq.com</p>
+        <p>Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e474048416e4f484f5f004d4143">[email&#160;protected]</a></p>
         <p>Location: Riyadh, Saudi Arabia</p>
         <p>Availability: 24/7 Event Browsing</p>
       </div>
     </div>
 
     <div class="page-shell footer-bottom">
-      © 2026 AFAQ. All rights reserved.
-    </div>
-  </footer>
-
-  {% block extra_scripts %}{% endblock %}
-</body>
-</html>
+       
