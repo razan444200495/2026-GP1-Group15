@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | AFAQ{% endblock %}
+
+{% block extra_styles %}
+<style>
+  /* ── Page header ── */
+  .admin-hero {
+    background: linear-gradient(135deg, var(--bg-soft) 0%, #e8ddd2 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 0 40px;
+  }
+  .admin-hero h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    letter-spacing: -1px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+  }
+  .admin-hero p { color: var(--text-soft); font-size: 1rem; }
+
+  /* ── Main area ── */
+  .admin-section { padding: 48px 0 80px; }
+
+  /* ── Add Event card ── */
+  .add-event-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    padding: 30px 34px;
+    margin-bottom: 52px;
+    flex-wrap: wrap;
+  }
+  .add-event-card-left { display: flex; align-items: center; gap: 18px; }
+  .add-event-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 300; color: #ffffff; flex-shrink: 0;
+  }
+  .add-event-card h3 { font-size: 1.2rem; color: var(--text-main); margin-bottom: 4px; }
+  .add-event-card p  { color: var(--text-soft); font-size: 0.95rem; margin: 0; }
+
+  /* ── Events section heading ── */
+  .events-section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+  }
+  .events-section-header h2 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+  }
+  .event-count-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  /* ── Events grid — same as rest of site ── */
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 26px;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 24px;
+    background: var(--bg-card);
+    border: 1px dashed var(--accent-soft);
+    border-radius: 28px;
+    color: var(--text-soft);
+  }
+  .empty-state span { font-size: 2.4rem; display: block; margin-bottom: 14px; }
+  .empty-state p { font-size: 1rem; line-height: 1.7; }
+
+  /* ── Flash ── */
+  .flash-banner {
+    background: #f0f9f0;
+    border: 1px solid #b8d8b8;
+    border-radius: 14px;
+    padding: 14px 20px;
+    color: #3a6b3a;
+    margin-bottom: 28px;
+    font-size: 0.97rem;
+  }
+
+  @media (max-width: 900px) { .events-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 580px) {
+    .events-grid { grid-template-columns: 1fr; }
+    .add-event-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-hero">
+  <div class="page-shell">
+    <h1>Admin Dashboard</h1>
+    <p>Welcome back, {{ current_user.fullname }}. Manage your platform below.</p>
+  </div>
+</div>
+
+<section class="admin-section">
+  <div class="page-shell">
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash-banner">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Add Event card -->
+    <div class="add-event-card">
+      <div class="add-event-card-left">
+        <div class="add-event-icon">+</div>
+        <div>
+          <h3>Add New Event</h3>
+          <p>Publish a new event directly to the AFAQ platform.</p>
+        </div>
+      </div>
+      <a href="{{ url_for('admin.add_event') }}" class="solid-btn">Add Event</a>
+    </div>
+
+    <!-- Admin events list -->
+    <div class="events-section-header">
+      <h2>Events Added by Admin</h2>
+      <span class="event-count-badge">{{ events|length }} event{{ 's' if events|length != 1 }}</span>
+    </div>
+
+    <div class="events-grid">
+      {% if events %}
+        {% for event in events %}
+        <article class="event-card">
+          <div class="event-image-wrap">
+            {% if event.image %}
+              <img src="{{ event.image }}" alt="{{ event.title }}">
+            {% else %}
+              <img src="https://via.placeholder.com/600x400?text=Event+Image" alt="Event Image">
+            {% endif %}
+            <span class="event-badge">{{ event.category }}</span>
+          </div>
+
+          <div class="event-content">
+            <div class="event-meta">
+              <span class="event-pill">{{ event.city }}</span>
+              {% if event.price %}
+                <span class="event-pill">{{ event.price }}</span>
+              {% endif %}
+            </div>
+
+            <h3>{{ event.title }}</h3>
+            <p>{{ event.description[:110] if event.description else '' }}{% if event.description and event.description|length > 110 %}…{% endif %}</p>
+
+            <div class="event-bottom">
+              <span class="date-tag">📅 {{ event.date }}</span>
+              <span class="location-tag">📍 {{ event.location if event.location else 'Riyadh' }}</span>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+
+      {% else %}
+        <div class="empty-state">
+          <span>📋</span>
+          <p>No admin events yet.<br>Use the button above to add your first event.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
