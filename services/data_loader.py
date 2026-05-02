@@ -1,7 +1,33 @@
 import json
 import os
+import re
+import html
 from models.event import Event
 from extensions import db
+
+def clean_text(value):
+    if not value:
+        return ""
+
+    text = html.unescape(str(value))
+    text = text.replace("&nbsp;", " ")
+
+    # حذف CSS blocks
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+    text = re.sub(r"[a-zA-Z0-9_\-\.\#,\s:\*\[\]\(\)]+?\{[^{}]*\}", "", text, flags=re.DOTALL)
+
+    # حذف HTML tags
+    text = re.sub(r"<[^>]+>", "", text)
+
+    # حذف أي بقايا قبل أول حرف عربي إذا النص يبدأ بكود CSS
+    match = re.search(r"[\u0600-\u06FF]", text)
+    if match:
+        text = text[match.start():]
+
+    text = text.replace("\xa0", " ")
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
 
 
 def load_events_to_database():
@@ -12,22 +38,22 @@ def load_events_to_database():
 
     for item in events:
         existing_event = Event.query.filter_by(
-            title=item.get("title", "No Title")
+            title=clean_text(item.get("title", "No Title"))
         ).first()
 
         if not existing_event:
             event = Event(
-                title=item.get("title", "No Title"),
-                category=item.get("category", "General"),
-                city=item.get("city", "Riyadh"),
+                title=clean_text(item.get("title", "No Title")),
+                category=clean_text(item.get("category", "General")),
+                city=clean_text(item.get("city", "Riyadh")),
                 date=str(item.get("date", "")),
                 time=str(item.get("time", "")),
-                description=item.get("description", ""),
+                description=clean_text(item.get("description", "")),
                 image=item.get("image", ""),
-                official_link=item.get("official_link", ""),
-                source=item.get("source", "GoSaudis"),
-                price=item.get("price", ""),
-                location=item.get("location", ""),
+                official_link=item.get("external_link") or item.get("official_link", ""),
+                source=item.get("source", "Riyadh.sa"),
+                price=clean_text(item.get("price", "")),
+                location=clean_text(item.get("location", "")),
                 end_date=str(item.get("end_date", ""))
             )
             db.session.add(event)
