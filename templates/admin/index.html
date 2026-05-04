@@ -72,7 +72,7 @@
     font-weight: 700;
   }
 
-  /* ── Events grid — same as rest of site ── */
+  /* ── Events grid ── */
   .events-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -103,10 +103,69 @@
     font-size: 0.97rem;
   }
 
-  @media (max-width: 900px) { .events-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 900px) { 
+    .events-grid { grid-template-columns: 1fr 1fr; } 
+  }
+
   @media (max-width: 580px) {
     .events-grid { grid-template-columns: 1fr; }
     .add-event-card { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ── Event Card fix ── */
+  .event-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Admin Actions (FIXED) ── */
+  .admin-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 28px;
+    margin-bottom: 20px;
+  }
+
+  .admin-actions form {
+    margin: 0;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    width: 105px;
+    height: 46px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    font-family: inherit;
+  }
+
+  .btn-edit {
+    border: 2px solid #b8956a;
+    background: #fffdf9;
+    color: #2b241f;
+    transition: 0.3s;
+  }
+
+  .btn-edit:hover {
+    background: #f5f1eb;
+  }
+
+  .btn-delete {
+    border: 2px solid #b8956a;
+    background: #b8956a;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .btn-delete:hover {
+    background: #9c7f5c;
   }
 </style>
 {% endblock %}
@@ -174,11 +233,22 @@
             <p>{{ event.description[:110] if event.description else '' }}{% if event.description and event.description|length > 110 %}…{% endif %}</p>
 
             <div class="event-bottom">
-              <span class="date-tag">📅 {{ event.date }}</span>
+              <span class="date-tag">📅 {{ event.start_date }}</span>
               <span class="location-tag">📍 {{ event.location if event.location else 'Riyadh' }}</span>
             </div>
           </div>
-        </article>
+   <div class="admin-actions">
+  <a href="{{ url_for('admin.edit_event', event_id=event.id) }}" class="btn-edit">Edit</a>
+
+  <form method="POST" action="{{ url_for('admin.delete_event', event_id=event.id) }}">
+    <button type="submit" class="btn-delete"
+      onclick="return confirm('Are you sure you want to delete this event?');">
+      Delete
+    </button>
+  </form>
+</div>
+        
+       </article>
         {% endfor %}
 
       {% else %}
@@ -190,6 +260,7 @@
     </div>
 
   </div>
+ 
 </section>
 
 {% endblock %}
