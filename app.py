@@ -12,6 +12,7 @@ def create_app():
 
     from models.user import User
     from models.event import Event
+    from models.search import Search
 
     from routes.auth import auth_bp
     from routes.events import events_bp
