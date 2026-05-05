@@ -10,6 +10,7 @@ from models.event import Event
 from models.rating import Rating
 from models.review import Review
 
+
 events_bp = Blueprint("events", __name__)
 
 
@@ -27,8 +28,6 @@ def events_page():
 
     query = Event.query
 
-    # Search by title or description
-    # Search
     if search:
         words = [w for w in search.lower().split() if len(w) > 2]
 
@@ -48,11 +47,9 @@ def events_page():
             db.session.add(new_search)
             db.session.commit()
 
-    # Filter by category
     if category:
         query = query.filter(Event.category == category)
 
-    # Filter by available date
     today = date.today()
 
     if date_filter == "today":
@@ -96,116 +93,75 @@ def event_details(event_id):
 
     ratings = Rating.query.filter_by(event_id=event_id).all()
     ratings_count = len(ratings)
-
-    if ratings_count > 0:
-        average_rating = sum(r.value for r in ratings) / ratings_count
-    else:
-        average_rating = 0
-
-    reviews = Review.query.filter_by(event_id=event_id).order_by(Review.created_at.desc()).all()
+    average_rating = round(sum(r.value for r in ratings) / ratings_count, 1) if ratings_count > 0 else None
 
     current_user_rating = None
-    current_user_review = None
-
     if current_user.is_authenticated:
-        current_user_rating = Rating.query.filter_by(
-            user_id=current_user.user_id,
-            event_id=event_id
-        ).first()
+        existing = Rating.query.filter_by(user_id=current_user.user_id, event_id=event_id).first()
+        if existing:
+            current_user_rating = existing.value
 
-        current_user_review = Review.query.filter_by(
-            user_id=current_user.user_id,
-            event_id=event_id
-        ).first()
+    reviews = Review.query.filter_by(event_id=event_id).order_by(Review.created_at.desc()).all()
 
     return render_template(
         "event_details.html",
         event=event,
         average_rating=average_rating,
         ratings_count=ratings_count,
-        reviews=reviews,
         current_user_rating=current_user_rating,
-        current_user_review=current_user_review
+        reviews=reviews,
     )
 
 
 @events_bp.route("/events/<int:event_id>/rate", methods=["POST"])
 def rate_event(event_id):
     if not current_user.is_authenticated:
-        flash("You must be logged in to rate events.", "error")
-        return redirect(url_for("auth.login"))
+        flash("You must be logged in to rate an event.", "warning")
+        return redirect(url_for("events.event_details", event_id=event_id))
 
     Event.query.get_or_404(event_id)
 
-    rating_value = request.form.get("rating")
-
-    if not rating_value:
-        flash("Please select a rating.", "error")
-        return redirect(url_for("events.event_details", event_id=event_id))
-
     try:
-        rating_value = int(rating_value)
+        value = int(request.form.get("rating", 0))
     except ValueError:
-        flash("Invalid rating value.", "error")
+        value = 0
+
+    if value < 1 or value > 5:
+        flash("Rating must be between 1 and 5.", "danger")
         return redirect(url_for("events.event_details", event_id=event_id))
 
-    if rating_value < 1 or rating_value > 5:
-        flash("Rating must be between 1 and 5.", "error")
-        return redirect(url_for("events.event_details", event_id=event_id))
-
-    existing_rating = Rating.query.filter_by(
-        user_id=current_user.user_id,
-        event_id=event_id
-    ).first()
-
-    if existing_rating:
-        existing_rating.value = rating_value
+    existing = Rating.query.filter_by(user_id=current_user.user_id, event_id=event_id).first()
+    if existing:
+        existing.value = value
         flash("Your rating has been updated.", "success")
     else:
-        new_rating = Rating(
-            user_id=current_user.user_id,
-            event_id=event_id,
-            value=rating_value
-        )
-        db.session.add(new_rating)
-        flash("Thank you for rating this event.", "success")
+        db.session.add(Rating(user_id=current_user.user_id, event_id=event_id, value=value))
+        flash("Thank you for rating this event!", "success")
 
     db.session.commit()
-
     return redirect(url_for("events.event_details", event_id=event_id))
 
 
 @events_bp.route("/events/<int:event_id>/reviews", methods=["POST"])
-def write_review(event_id):
+def submit_review(event_id):
     if not current_user.is_authenticated:
-        flash("You must be logged in to write reviews.", "error")
-        return redirect(url_for("auth.login"))
-
-    Event.query.get_or_404(event_id)
-
-    content = request.form.get("review", "").strip()
-
-    if not content:
-        flash("Review cannot be empty.", "error")
+        flash("You must be logged in to write a review.", "warning")
         return redirect(url_for("events.event_details", event_id=event_id))
 
-    existing_review = Review.query.filter_by(
-        user_id=current_user.user_id,
-        event_id=event_id
-    ).first()
+    Event.query.get_or_404(event_id)
+    content = request.form.get("content", "").strip()
 
-    if existing_review:
-        existing_review.content = content
+    if not content:
+        flash("Review cannot be empty.", "danger")
+        return redirect(url_for("events.event_details", event_id=event_id))
+
+    existing = Review.query.filter_by(user_id=current_user.user_id, event_id=event_id).first()
+    if existing:
+        existing.content = content
         flash("Your review has been updated.", "success")
     else:
-        new_review = Review(
-            user_id=current_user.user_id,
-            event_id=event_id,
-            content=content
-        )
-        db.session.add(new_review)
-        flash("Your review has been submitted.", "success")
+        db.session.add(Review(user_id=current_user.user_id, event_id=event_id, content=content))
+        flash("Your review has been submitted!", "success")
 
     db.session.commit()
-
     return redirect(url_for("events.event_details", event_id=event_id))
