@@ -73,15 +73,17 @@
       flex-shrink: 0;
     }
 
- .brand img {
-  width: 145px;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-.brand img:hover {
-    transform: scale(1.05);
-}
+    .brand img {
+      width: 145px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      transition: 0.25s ease;
+    }
+
+    .brand img:hover {
+      transform: scale(1.05);
+    }
 
     .brand-text {
       display: flex;
@@ -127,7 +129,9 @@
     .solid-btn,
     .login-btn,
     .signup-btn,
-    .primary-btn {
+    .primary-btn,
+    .profile-pill,
+    .logout-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -163,13 +167,47 @@
       background: rgba(255, 255, 255, 0.55);
     }
 
+    .logout-btn {
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      border: 1px solid rgba(151, 88, 70, 0.28);
+      color: #7d4435;
+      background: rgba(255, 255, 255, 0.62);
+    }
+
     .outline-btn:hover,
     .solid-btn:hover,
     .login-btn:hover,
     .signup-btn:hover,
-    .primary-btn:hover {
+    .primary-btn:hover,
+    .profile-pill:hover,
+    .logout-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 24px rgba(83, 61, 43, 0.12);
+    }
+
+    .profile-pill {
+      gap: 10px;
+      padding: 7px 14px 7px 7px;
+      border: 1px solid rgba(184, 149, 106, 0.34);
+      background: rgba(255, 255, 255, 0.66);
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
+    .profile-avatar-small {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: var(--text-light);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(142, 111, 79, 0.18);
+      flex-shrink: 0;
     }
 
     .section {
@@ -355,7 +393,7 @@
     }
 
     .footer-logo-row img {
-      width: 55px;
+      width: 90px;
       height: auto;
       object-fit: contain;
       display: block;
@@ -452,6 +490,17 @@
       .details-body h1 {
         font-size: 1.8rem;
       }
+
+      .brand img {
+        width: 110px;
+      }
+
+      .profile-pill,
+      .logout-btn,
+      .login-btn,
+      .signup-btn {
+        width: 100%;
+      }
     }
   </style>
 
@@ -460,21 +509,24 @@
 <body>
   <header class="topbar">
     <div class="page-shell navbar">
-      <div class="brand">
+      <a class="brand" href="{{ url_for('events.home') }}">
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="AFAQ Logo">
         <div class="brand-text">
           <span>RIYADH EVENTS</span>
         </div>
-      </div>
+      </a>
 
-{% if current_user.is_authenticated and current_user.role == 'admin' and request.endpoint not in ['auth.login', 'auth.signup'] %}
+      {% if current_user.is_authenticated and current_user.role == 'admin' and request.endpoint not in ['auth.login', 'auth.signup'] %}
         <nav class="nav-links">
           <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
           <a href="{{ url_for('admin.profile') }}">Profile</a>
         </nav>
 
-      {% else %}
+        <div class="nav-actions">
+          <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
+        </div>
 
+      {% else %}
         <nav class="nav-links">
           <a href="{{ url_for('events.home') }}">Home</a>
           <a href="{{ url_for('events.events_page') }}">Events</a>
@@ -482,13 +534,23 @@
           <a href="#contact">Contact</a>
         </nav>
 
-{% if request.endpoint not in ['auth.login', 'auth.signup'] %}
+        {% if request.endpoint not in ['auth.login', 'auth.signup'] %}
           <div class="nav-actions">
-            <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
-<a href="{{ url_for('auth.signup') }}" class="signup-btn">Sign Up</a>          </div>
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('auth.user_profile') }}" class="profile-pill" title="My Profile">
+                <span class="profile-avatar-small">
+                  {{ current_user.fullname[0]|upper if current_user.fullname else 'U' }}
+                </span>
+                <span>{{ current_user.fullname }}</span>
+              </a>
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
+              <a href="{{ url_for('auth.signup') }}" class="signup-btn">Sign Up</a>
+            {% endif %}
+          </div>
         {% endif %}
-
       {% endif %}
+    </div>
   </header>
 
   <main>
@@ -518,12 +580,16 @@
 
       <div class="footer-contact">
         <h4>Contact</h4>
-        <p>Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e474048416e4f484f5f004d4143">[email&#160;protected]</a></p>
+        <p>Email: info@afaq.com</p>
         <p>Location: Riyadh, Saudi Arabia</p>
         <p>Availability: 24/7 Event Browsing</p>
       </div>
     </div>
 
     <div class="page-shell footer-bottom">
-       
+      © 2026 AFAQ. All rights reserved.
+    </div>
+  </footer>
+</body>
+</html>
 
