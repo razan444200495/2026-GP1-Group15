@@ -14,7 +14,9 @@ def create_app():
     from models.user import User
     from models.event import Event
     from models.search import Search
-
+    from models.rating import Rating
+    from models.review import Review
+    
     from routes.auth import auth_bp
     from routes.events import events_bp
     from routes.admin import admin_bp
