@@ -518,14 +518,12 @@
 
       {% if current_user.is_authenticated and current_user.role == 'admin' and request.endpoint not in ['auth.login', 'auth.signup'] %}
         <nav class="nav-links">
-          <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('admin.profile') }}">Profile</a>
-        </nav>
-
-        <div class="nav-actions">
-          <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
-        </div>
-
+  <a href="{{ url_for('events.home') }}">Home</a>
+  <a href="{{ url_for('events.events_page') }}">Events</a>
+  <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('admin.profile') }}">Profile</a>
+</nav>
+       
       {% else %}
         <nav class="nav-links">
           <a href="{{ url_for('events.home') }}">Home</a>
@@ -592,4 +590,3 @@
   </footer>
 </body>
 </html>
-
