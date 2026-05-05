@@ -1,13 +1,14 @@
 from datetime import date, timedelta
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy import or_
 from flask_login import current_user
 from models.search import Search
 
 from extensions import db
 from models.event import Event
-
+from models.rating import Rating
+from models.review import Review
 
 events_bp = Blueprint("events", __name__)
 
@@ -92,4 +93,119 @@ def events_page():
 @events_bp.route("/events/<int:event_id>")
 def event_details(event_id):
     event = Event.query.get_or_404(event_id)
-    return render_template("event_details.html", event=event)
+
+    ratings = Rating.query.filter_by(event_id=event_id).all()
+    ratings_count = len(ratings)
+
+    if ratings_count > 0:
+        average_rating = sum(r.value for r in ratings) / ratings_count
+    else:
+        average_rating = 0
+
+    reviews = Review.query.filter_by(event_id=event_id).order_by(Review.created_at.desc()).all()
+
+    current_user_rating = None
+    current_user_review = None
+
+    if current_user.is_authenticated:
+        current_user_rating = Rating.query.filter_by(
+            user_id=current_user.user_id,
+            event_id=event_id
+        ).first()
+
+        current_user_review = Review.query.filter_by(
+            user_id=current_user.user_id,
+            event_id=event_id
+        ).first()
+
+    return render_template(
+        "event_details.html",
+        event=event,
+        average_rating=average_rating,
+        ratings_count=ratings_count,
+        reviews=reviews,
+        current_user_rating=current_user_rating,
+        current_user_review=current_user_review
+    )
+
+
+@events_bp.route("/events/<int:event_id>/rate", methods=["POST"])
+def rate_event(event_id):
+    if not current_user.is_authenticated:
+        flash("You must be logged in to rate events.", "error")
+        return redirect(url_for("auth.login"))
+
+    Event.query.get_or_404(event_id)
+
+    rating_value = request.form.get("rating")
+
+    if not rating_value:
+        flash("Please select a rating.", "error")
+        return redirect(url_for("events.event_details", event_id=event_id))
+
+    try:
+        rating_value = int(rating_value)
+    except ValueError:
+        flash("Invalid rating value.", "error")
+        return redirect(url_for("events.event_details", event_id=event_id))
+
+    if rating_value < 1 or rating_value > 5:
+        flash("Rating must be between 1 and 5.", "error")
+        return redirect(url_for("events.event_details", event_id=event_id))
+
+    existing_rating = Rating.query.filter_by(
+        user_id=current_user.user_id,
+        event_id=event_id
+    ).first()
+
+    if existing_rating:
+        existing_rating.value = rating_value
+        flash("Your rating has been updated.", "success")
+    else:
+        new_rating = Rating(
+            user_id=current_user.user_id,
+            event_id=event_id,
+            value=rating_value
+        )
+        db.session.add(new_rating)
+        flash("Thank you for rating this event.", "success")
+
+    db.session.commit()
+
+    return redirect(url_for("events.event_details", event_id=event_id))
+
+
+@events_bp.route("/events/<int:event_id>/reviews", methods=["POST"])
+def write_review(event_id):
+    if not current_user.is_authenticated:
+        flash("You must be logged in to write reviews.", "error")
+        return redirect(url_for("auth.login"))
+
+    Event.query.get_or_404(event_id)
+
+    content = request.form.get("review", "").strip()
+
+    if not content:
+        flash("Review cannot be empty.", "error")
+        return redirect(url_for("events.event_details", event_id=event_id))
+
+    existing_review = Review.query.filter_by(
+        user_id=current_user.user_id,
+        event_id=event_id
+    ).first()
+
+    if existing_review:
+        existing_review.content = content
+        flash("Your review has been updated.", "success")
+    else:
+        new_review = Review(
+            user_id=current_user.user_id,
+            event_id=event_id,
+            content=content
+        )
+        db.session.add(new_review)
+        flash("Your review has been submitted.", "success")
+
+    db.session.commit()
+
+    return redirect(url_for("events.event_details", event_id=event_id))
