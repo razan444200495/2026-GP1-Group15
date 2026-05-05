@@ -1,16 +1,42 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import random
+import time
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask_mail import Message
+from flask_login import login_user, login_required, logout_user, current_user
 from models.user import User
-from extensions import db
-from flask_login import login_user, login_required, logout_user
+from extensions import db, mail
 
 auth_bp = Blueprint('auth', __name__)
+
+CODE_EXPIRY_SECONDS = 10 * 60
+
+
+def generate_verification_code():
+    return str(random.randint(1000, 9999))
+
+
+def code_is_expired(expires_at):
+    return not expires_at or time.time() > float(expires_at)
+
+
+def send_verification_code(recipient_email, code, purpose='password reset'):
+    message = Message(
+        subject='AFAQ Verification Code',
+        recipients=[recipient_email],
+        body=(
+            f'Your AFAQ verification code is: {code}\n\n'
+            f'This code is for {purpose}. It will expire in 10 minutes.\n\n'
+            'If you did not request this code, you can safely ignore this email.'
+        )
+    )
+    mail.send(message)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
 
         user = User.query.filter_by(email=email).first()
 
@@ -37,10 +63,9 @@ def logout():
 def signup():
     if request.method == 'POST':
         fullname = request.form.get('fullname', '').strip()
-        email    = request.form.get('email', '').strip().lower()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
 
-        # --- Validation ---
         errors = []
 
         if not fullname:
@@ -65,7 +90,6 @@ def signup():
                 email=email,
             )
 
-        # --- Create and save user ---
         new_user = User(fullname=fullname, email=email, role='user')
         new_user.set_password(password)
 
@@ -85,3 +109,238 @@ def signup():
         return redirect(url_for('events.home'))
 
     return render_template('signup.html', errors=[], fullname='', email='')
+
+
+@auth_bp.route('/user/profile', methods=['GET', 'POST'])
+@login_required
+def user_profile():
+    # Keep the admin profile separate from the user profile.
+    if current_user.role == 'admin':
+        return redirect(url_for('admin.profile'))
+
+    if request.method == 'POST':
+        fullname = request.form.get('fullname', '').strip()
+        current_password = request.form.get('current_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        errors = []
+
+        if not fullname:
+            errors.append('Full name is required.')
+        else:
+            existing_user = User.query.filter(
+                User.fullname == fullname,
+                User.user_id != current_user.user_id
+            ).first()
+            if existing_user:
+                errors.append('This username is already taken.')
+
+        wants_password_change = bool(current_password or new_password or confirm_password)
+
+        if wants_password_change:
+            if not current_password:
+                errors.append('Current password is required to change your password.')
+            elif not current_user.check_password(current_password):
+                errors.append('Current password is incorrect.')
+
+            if not new_password:
+                errors.append('New password is required.')
+            elif len(new_password) < 6:
+                errors.append('New password must be at least 6 characters.')
+
+            if new_password != confirm_password:
+                errors.append('New password and confirmation do not match.')
+
+        if errors:
+            return render_template('user_profile.html', errors=errors)
+
+        if wants_password_change:
+            code = generate_verification_code()
+            session['profile_password_code'] = code
+            session['profile_password_expires_at'] = time.time() + CODE_EXPIRY_SECONDS
+            session['profile_pending_fullname'] = fullname
+            session['profile_pending_new_password'] = new_password
+
+            try:
+                send_verification_code(
+                    current_user.email,
+                    code,
+                    purpose='changing your AFAQ password'
+                )
+            except Exception:
+                return render_template(
+                    'user_profile.html',
+                    errors=['Could not send the verification email. Please check the mail settings and try again.']
+                )
+
+            flash('A verification code has been sent to your email.')
+            return redirect(url_for('auth.verify_profile_password_code'))
+
+        current_user.fullname = fullname
+
+        try:
+            db.session.commit()
+            flash('Profile updated successfully.')
+        except Exception:
+            db.session.rollback()
+            return render_template(
+                'user_profile.html',
+                errors=['An unexpected error occurred. Please try again.']
+            )
+
+        return redirect(url_for('auth.user_profile'))
+
+    return render_template('user_profile.html', errors=[])
+
+
+@auth_bp.route('/user/profile/verify-password', methods=['GET', 'POST'])
+@login_required
+def verify_profile_password_code():
+    if current_user.role == 'admin':
+        return redirect(url_for('admin.profile'))
+
+    if not session.get('profile_password_code'):
+        flash('No password change request was found.')
+        return redirect(url_for('auth.user_profile'))
+
+    errors = []
+
+    if request.method == 'POST':
+        entered_code = request.form.get('code', '').strip()
+
+        if code_is_expired(session.get('profile_password_expires_at')):
+            errors.append('Verification code expired. Please request a new code.')
+        elif entered_code != session.get('profile_password_code'):
+            errors.append('Invalid verification code.')
+
+        if errors:
+            return render_template('verify_profile_password_code.html', errors=errors)
+
+        current_user.fullname = session.get('profile_pending_fullname', current_user.fullname)
+        current_user.set_password(session.get('profile_pending_new_password'))
+
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            return render_template(
+                'verify_profile_password_code.html',
+                errors=['An unexpected error occurred. Please try again.']
+            )
+
+        session.pop('profile_password_code', None)
+        session.pop('profile_password_expires_at', None)
+        session.pop('profile_pending_fullname', None)
+        session.pop('profile_pending_new_password', None)
+
+        flash('Password updated successfully.')
+        return redirect(url_for('auth.user_profile'))
+
+    return render_template('verify_profile_password_code.html', errors=[])
+
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('auth.user_profile'))
+
+    errors = []
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+
+        if not email:
+            errors.append('Email is required.')
+            return render_template('forgot_password.html', errors=errors, email=email)
+
+        user = User.query.filter_by(email=email).first()
+
+        # Show a simple error for this student project so the user knows what happened.
+        if not user:
+            errors.append('No account was found with this email.')
+            return render_template('forgot_password.html', errors=errors, email=email)
+
+        code = generate_verification_code()
+        session['reset_password_user_id'] = user.user_id
+        session['reset_password_code'] = code
+        session['reset_password_expires_at'] = time.time() + CODE_EXPIRY_SECONDS
+
+        try:
+            send_verification_code(
+                user.email,
+                code,
+                purpose='resetting your AFAQ password'
+            )
+        except Exception:
+            return render_template(
+                'forgot_password.html',
+                errors=['Could not send the verification email. Please check the mail settings and try again.'],
+                email=email
+            )
+
+        flash('A verification code has been sent to your email.')
+        return redirect(url_for('auth.verify_reset_password_code'))
+
+    return render_template('forgot_password.html', errors=[], email='')
+
+
+@auth_bp.route('/reset-password/verify', methods=['GET', 'POST'])
+def verify_reset_password_code():
+    if current_user.is_authenticated:
+        return redirect(url_for('auth.user_profile'))
+
+    if not session.get('reset_password_code') or not session.get('reset_password_user_id'):
+        flash('Please enter your email first.')
+        return redirect(url_for('auth.forgot_password'))
+
+    errors = []
+
+    if request.method == 'POST':
+        entered_code = request.form.get('code', '').strip()
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if code_is_expired(session.get('reset_password_expires_at')):
+            errors.append('Verification code expired. Please request a new code.')
+        elif entered_code != session.get('reset_password_code'):
+            errors.append('Invalid verification code.')
+
+        if not new_password:
+            errors.append('New password is required.')
+        elif len(new_password) < 6:
+            errors.append('New password must be at least 6 characters.')
+
+        if new_password != confirm_password:
+            errors.append('New password and confirmation do not match.')
+
+        if errors:
+            return render_template('verify_reset_code.html', errors=errors)
+
+        user = User.query.get(session.get('reset_password_user_id'))
+        if not user:
+            session.pop('reset_password_user_id', None)
+            session.pop('reset_password_code', None)
+            session.pop('reset_password_expires_at', None)
+            flash('Account not found. Please try again.')
+            return redirect(url_for('auth.forgot_password'))
+
+        user.set_password(new_password)
+
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            return render_template(
+                'verify_reset_code.html',
+                errors=['An unexpected error occurred. Please try again.']
+            )
+
+        session.pop('reset_password_user_id', None)
+        session.pop('reset_password_code', None)
+        session.pop('reset_password_expires_at', None)
+
+        flash('Password reset successfully. Please log in with your new password.')
+        return redirect(url_for('auth.login'))
+
+    return render_template('verify_reset_code.html', errors=[])
