@@ -114,7 +114,6 @@ def signup():
 @auth_bp.route('/user/profile', methods=['GET', 'POST'])
 @login_required
 def user_profile():
-    # Keep the admin profile separate from the user profile.
     if current_user.role == 'admin':
         return redirect(url_for('admin.profile'))
 
@@ -214,14 +213,27 @@ def verify_profile_password_code():
         elif entered_code != session.get('profile_password_code'):
             errors.append('Invalid verification code.')
 
+        pending_fullname = session.get('profile_pending_fullname')
+        pending_new_password = session.get('profile_pending_new_password')
+
+        if not pending_new_password:
+            errors.append('Password update session expired. Please try again from your profile page.')
+
         if errors:
             return render_template('verify_profile_password_code.html', errors=errors)
 
-        current_user.fullname = session.get('profile_pending_fullname', current_user.fullname)
-        current_user.set_password(session.get('profile_pending_new_password'))
+        user = User.query.get(current_user.user_id)
+
+        if not user:
+            flash('User account not found.')
+            return redirect(url_for('auth.login'))
+
+        user.fullname = pending_fullname or user.fullname
+        user.set_password(pending_new_password)
 
         try:
             db.session.commit()
+            login_user(user)
         except Exception:
             db.session.rollback()
             return render_template(
@@ -256,7 +268,6 @@ def forgot_password():
 
         user = User.query.filter_by(email=email).first()
 
-        # Show a simple error for this student project so the user knows what happened.
         if not user:
             errors.append('No account was found with this email.')
             return render_template('forgot_password.html', errors=errors, email=email)
@@ -318,6 +329,7 @@ def verify_reset_password_code():
             return render_template('verify_reset_code.html', errors=errors)
 
         user = User.query.get(session.get('reset_password_user_id'))
+
         if not user:
             session.pop('reset_password_user_id', None)
             session.pop('reset_password_code', None)
