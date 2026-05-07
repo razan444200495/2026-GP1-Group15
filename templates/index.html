@@ -164,6 +164,105 @@
     gap: 14px;
     margin-top: 8px;
   }
+
+
+  .top-rated-section {
+    padding: 78px 0 84px;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(184, 149, 106, 0.14), transparent 34%),
+      linear-gradient(180deg, #f8f2eb 0%, #f2e9dd 100%);
+    border-top: 1px solid rgba(184, 149, 106, 0.16);
+    border-bottom: 1px solid rgba(184, 149, 106, 0.16);
+  }
+
+  .top-rated-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .top-rated-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    background: rgba(184, 149, 106, 0.14);
+    color: var(--accent-dark);
+    font-weight: 800;
+    font-size: 0.86rem;
+    margin-bottom: 12px;
+  }
+
+  .top-rated-heading h2 {
+    font-size: clamp(2rem, 4.6vw, 4rem);
+    line-height: 1.1;
+    letter-spacing: -1px;
+    color: var(--text-main);
+  }
+
+  .top-rated-heading p {
+    max-width: 520px;
+    color: var(--text-soft);
+    line-height: 1.8;
+    font-size: 1rem;
+  }
+
+  .top-rated-card {
+    position: relative;
+  }
+
+  .top-rated-rank {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: var(--text-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    box-shadow: 0 12px 24px rgba(58, 42, 31, 0.24);
+  }
+
+  .rating-badge-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    background: rgba(184, 149, 106, 0.14);
+    border: 1px solid rgba(184, 149, 106, 0.24);
+    color: var(--accent-dark);
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+
+  .top-rated-empty {
+    background: var(--bg-card);
+    border: 1px dashed var(--accent-soft);
+    color: var(--text-soft);
+    border-radius: 24px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 700px) {
+    .top-rated-heading {
+      align-items: start;
+      flex-direction: column;
+    }
+  }
+
 </style>
 {% endblock %}
 
@@ -230,7 +329,7 @@
           <p>{{ event.description[:100] if event.description else 'Discover a unique Riyadh event.' }}...</p>
 
           <div class="event-bottom">
-            <span class="date-tag">📅 {{ event.date }}</span>
+            <span class="date-tag">📅 {{ event.start_date }}</span>
             <span class="location-tag">📍 {{ event.location if event.location else 'Riyadh' }}</span>
           </div>
 
@@ -241,6 +340,67 @@
       </article>
       {% endfor %}
     </div>
+  </div>
+</section>
+
+<section class="top-rated-section" id="top-rated">
+  <div class="page-shell">
+    <div class="top-rated-heading">
+      <div>
+        <span class="top-rated-kicker">⭐ User Favorites</span>
+        <h2>Top Rated Events</h2>
+        <p>
+        Discover the highest-rated Riyadh events based on user feedback and ratings.</p>
+      </div>
+      
+    </div>
+
+    {% if top_rated_events %}
+      <div class="events-grid">
+        {% for item in top_rated_events %}
+        <article class="event-card top-rated-card">
+          <span class="top-rated-rank">{{ loop.index }}</span>
+
+          <div class="event-image-wrap">
+            {% if item.event.image %}
+              <img src="{{ item.event.image }}" alt="{{ item.event.title }}">
+            {% else %}
+              <img src="https://via.placeholder.com/600x400?text=Event+Image" alt="Event Image">
+            {% endif %}
+            <span class="event-badge">Top Rated</span>
+          </div>
+
+          <div class="event-content">
+            <div class="rating-badge-home">
+              ⭐ {{ item.avg_rating }}/5
+              <span>({{ item.ratings_count }} {{ 'rating' if item.ratings_count == 1 else 'ratings' }})</span>
+            </div>
+
+            <div class="event-meta">
+              <span class="event-pill">{{ item.event.category }}</span>
+              <span class="event-pill">{{ item.event.city }}</span>
+            </div>
+
+            <h3>{{ item.event.title }}</h3>
+            <p>{{ item.event.description[:100] if item.event.description else 'Discover a highly rated Riyadh event.' }}...</p>
+
+            <div class="event-bottom">
+              <span class="date-tag">📅 {{ item.event.start_date }}</span>
+              <span class="location-tag">📍 {{ item.event.location if item.event.location else 'Riyadh' }}</span>
+            </div>
+
+            <div style="margin-top: 18px;">
+              <a href="{{ url_for('events.event_details', event_id=item.event.id) }}" class="primary-btn">View Details</a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="top-rated-empty">
+        No rated events yet. Once users rate events, the top 3 will appear here automatically.
+      </div>
+    {% endif %}
   </div>
 </section>
 
