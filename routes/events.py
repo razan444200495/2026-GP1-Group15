@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from sqlalchemy import or_
+from sqlalchemy import or_, func, desc
 from flask_login import current_user
 from models.search import Search
 
@@ -17,7 +17,34 @@ events_bp = Blueprint("events", __name__)
 @events_bp.route("/")
 def home():
     events = Event.query.limit(6).all()
-    return render_template("index.html", events=events)
+
+    top_rated_query = (
+        db.session.query(
+            Event,
+            func.avg(Rating.value).label("avg_rating"),
+            func.count(Rating.id).label("ratings_count")
+        )
+        .join(Rating, Rating.event_id == Event.id)
+        .group_by(Event.id)
+        .order_by(desc("avg_rating"), desc("ratings_count"))
+        .limit(3)
+        .all()
+    )
+
+    top_rated_events = [
+        {
+            "event": event,
+            "avg_rating": round(float(avg_rating), 1),
+            "ratings_count": ratings_count
+        }
+        for event, avg_rating, ratings_count in top_rated_query
+    ]
+
+    return render_template(
+        "index.html",
+        events=events,
+        top_rated_events=top_rated_events
+    )
 
 
 @events_bp.route("/events")
