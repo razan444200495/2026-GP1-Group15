@@ -54,7 +54,7 @@ def add_event():
     if request.method == 'POST':
         title         = request.form.get('title', '').strip()
         category      = request.form.get('category', '').strip()
-        city          = request.form.get('city', '').strip()
+        city = "Riyadh".strip()
         date_str      = request.form.get('date', '').strip()
         time_str      = request.form.get('time', '').strip()
         description   = request.form.get('description', '').strip()
