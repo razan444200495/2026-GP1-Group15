@@ -87,6 +87,11 @@
     margin-bottom: -8px;
   }
 
+  input[type="date"],
+input[type="time"] {
+  direction: ltr;
+}
+
   .form-actions {
     grid-column: 1 / -1;
     display: flex;
@@ -161,13 +166,7 @@
             {% if errors.get('category') %}<span class="field-error">{{ errors.category }}</span>{% endif %}
           </div>
 
-          <div class="form-group">
-            <label>City <span class="required-star">*</span></label>
-            <input type="text" name="city"
-                   value="{{ form_data.get('city', '') }}"
-                   class="{{ 'has-error' if errors.get('city') }}">
-            {% if errors.get('city') %}<span class="field-error">{{ errors.city }}</span>{% endif %}
-          </div>
+       
 
           <div class="form-group full-width">
             <label>Description <span class="required-star">*</span></label>
