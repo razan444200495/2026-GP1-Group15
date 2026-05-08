@@ -42,6 +42,8 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
+            
+            flash('Login successful!', 'success')
 
             if user.role == "admin":
                 return redirect(url_for('admin.admin_dashboard'))
