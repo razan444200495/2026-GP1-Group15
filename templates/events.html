@@ -2,6 +2,63 @@
 
 {% block extra_styles %}
 <style>
+  .events-hero {
+  padding: 78px 0 46px;
+  background:
+    radial-gradient(circle at top right, rgba(184, 149, 106, 0.18), transparent 35%),
+    linear-gradient(135deg, #f8f3ec 0%, #efe3d6 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.events-hero {
+  position: relative;
+  padding: 110px 0;
+  overflow: hidden;
+
+  background:
+    linear-gradient(rgba(28, 20, 14, 0.55),
+    rgba(28, 20, 14, 0.55)),
+    url("/static/images/events-hero.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.events-hero h1 {
+  font-size: clamp(2.5rem, 5vw, 4.8rem);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  color: #fff;
+  max-width: 760px;
+  margin-bottom: 18px;
+}
+
+.events-hero p {
+  max-width: 620px;
+  color: rgba(255,255,255,0.88);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
   .filters-box {
     margin: 28px 0 36px;
     padding: 22px;
@@ -76,6 +133,20 @@
       grid-template-columns: 1fr;
     }
   }
+  .events-toolbar-title {
+  margin-bottom: 18px;
+}
+
+.events-toolbar-title h2 {
+  font-size: 1.6rem;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.events-toolbar-title p {
+  color: var(--text-soft);
+  font-size: 0.98rem;
+}
 </style>
 {% endblock %}
 
@@ -83,9 +154,21 @@
 {% block title %}All Events - AFAQ{% endblock %}
 
 {% block content %}
+<section class="events-hero">
+  <div class="page-shell events-hero-inner">
+    <span class="eyebrow">AFAQ • Riyadh Events</span>
+    <h1>Discover Experiences in Riyadh</h1>
+    <p>
+      Explore curated events, filter by category and date, and find experiences that match your interests.
+    </p>
+  </div>
+</section>
 <section class="section">
   <div class="page-shell">
-    <h1 class="page-title">Upcoming Events</h1>
+    <div class="events-toolbar-title">
+  <h2>Find events</h2>
+  <p>Use search and filters to narrow your options.</p>
+</div>
     <div class="filters-box">
 <form method="GET" action="/events" class="filters-form">
 
@@ -147,7 +230,6 @@
 
           <div class="event-bottom">
             <span class="date-tag">📅 {{ event.start_date }}</span>
-            <span class="location-tag">📍 {{ event.location if event.location else 'Riyadh' }}</span>
           </div>
 
           <div style="margin-top: 18px;">
