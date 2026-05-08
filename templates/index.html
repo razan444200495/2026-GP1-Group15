@@ -298,50 +298,6 @@
     </div>
   </div>
 </section>
-
-<section class="section" id="featured">
-  <div class="page-shell">
-    <div class="section-header">
-      <div>
-        <h2>Featured Riyadh Events</h2>
-      </div>
-    </div>
-
-    <div class="events-grid">
-      {% for event in events %}
-      <article class="event-card">
-        <div class="event-image-wrap">
-          {% if event.image %}
-            <img src="{{ event.image }}" alt="{{ event.title }}">
-          {% else %}
-            <img src="https://via.placeholder.com/600x400?text=Event+Image" alt="Event Image">
-          {% endif %}
-          <span class="event-badge">Featured</span>
-        </div>
-
-        <div class="event-content">
-          <div class="event-meta">
-            <span class="event-pill">{{ event.category }}</span>
-            <span class="event-pill">{{ event.city }}</span>
-          </div>
-
-          <h3>{{ event.title }}</h3>
-          <p>{{ event.description[:100] if event.description else 'Discover a unique Riyadh event.' }}...</p>
-
-          <div class="event-bottom">
-            <span class="date-tag">📅 {{ event.start_date }}</span>
-          </div>
-
-          <div style="margin-top: 18px;">
-            <a href="{{ url_for('events.event_details', event_id=event.id) }}" class="primary-btn">View Details</a>
-          </div>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
 <section class="top-rated-section" id="top-rated">
   <div class="page-shell">
     <div class="top-rated-heading">
@@ -402,6 +358,8 @@
   </div>
 </section>
 
+
+
 <section class="about-section" id="about">
   <div class="page-shell">
     <div class="about-heading">
@@ -431,3 +389,4 @@
   </div>
 </section>
 {% endblock %}
+
