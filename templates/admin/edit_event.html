@@ -155,7 +155,7 @@
         Modify the event details below. The updated information will be reflected on the platform after saving.
       </p>
 
-      <form method="POST" class="edit-form" onsubmit="return confirm('Are you sure you want to save these changes?');">
+      <form method="POST" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to save these changes?');">
 
         <div class="form-grid">
           <div class="form-group full">
@@ -214,8 +214,8 @@
           </div>
 
           <div class="form-group full">
-            <label>Image URL</label>
-            <input type="text" name="image" value="{{ event.image or '' }}" class="profile-input">
+            <label>Image </label>
+            <input type="file" name="image" accept="image/*">
           </div>
 
           <div class="form-group full">
