@@ -4,7 +4,9 @@ from extensions import db
 from models.event import Event
 from datetime import datetime
 from functools import wraps
-
+import os
+from flask import current_app
+from werkzeug.utils import secure_filename
 admin_bp = Blueprint('admin', __name__)
 
 
@@ -44,7 +46,6 @@ def profile():
 
 
 # ─── Add Event ────────────────────────────────────────────────────────────────
-
 @admin_bp.route('/admin/add-event', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -52,46 +53,81 @@ def add_event():
     errors = {}
 
     if request.method == 'POST':
-        title         = request.form.get('title', '').strip()
-        category      = request.form.get('category', '').strip()
-        city = "Riyadh".strip()
-        date_str      = request.form.get('date', '').strip()
-        time_str      = request.form.get('time', '').strip()
-        description   = request.form.get('description', '').strip()
-        image         = request.form.get('image', '').strip()
-        official_link = request.form.get('official_link', '').strip()
-        price         = request.form.get('price', '').strip()
-        location      = request.form.get('location', '').strip()
-        end_date_str  = request.form.get('end_date', '').strip()
 
-        # Required field validation
+        title = request.form.get('title', '').strip()
+        category = request.form.get('category', '').strip()
+        city = "Riyadh"
+        date_str = request.form.get('date', '').strip()
+        time_str = request.form.get('time', '').strip()
+        description = request.form.get('description', '').strip()
+
+        # Image Upload
+        image_file = request.files.get('image')
+        image = ""
+
+        if image_file and image_file.filename != "":
+            filename = secure_filename(image_file.filename)
+
+            upload_folder = os.path.join(
+                current_app.root_path,
+                "static",
+                "uploads"
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+
+            image_path = os.path.join(upload_folder, filename)
+
+            image_file.save(image_path)
+
+            image = f"/static/uploads/{filename}"
+
+        official_link = request.form.get('official_link', '').strip()
+        price = request.form.get('price', '').strip()
+        location = request.form.get('location', '').strip()
+        end_date_str = request.form.get('end_date', '').strip()
+
+        # Required validation
         required = {
-            'title':       title,
-            'category':    category,
-            'city':        city,
-            'date':        date_str,
-            'time':        time_str,
+            'title': title,
+            'category': category,
+            'city': city,
+            'date': date_str,
+            'time': time_str,
             'description': description,
         }
+
         for field, value in required.items():
             if not value:
-                errors[field] = f'{field.capitalize()} is required.'
+                errors[field] = f"{field.capitalize()} is required."
 
         # Date parsing
-        parsed_date = parsed_end_date = None
+        parsed_date = None
+        parsed_end_date = None
+
         if date_str and 'date' not in errors:
             try:
-                parsed_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                parsed_date = datetime.strptime(
+                    date_str,
+                    '%Y-%m-%d'
+                ).date()
+
             except ValueError:
                 errors['date'] = 'Invalid date format (use YYYY-MM-DD).'
 
         if end_date_str:
             try:
-                parsed_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                parsed_end_date = datetime.strptime(
+                    end_date_str,
+                    '%Y-%m-%d'
+                ).date()
+
             except ValueError:
                 errors['end_date'] = 'Invalid end date format (use YYYY-MM-DD).'
 
+        # Save event
         if not errors:
+
             event = Event(
                 title=title,
                 category=category,
@@ -101,14 +137,17 @@ def add_event():
                 description=description,
                 image=image or None,
                 official_link=official_link or None,
-                source='admin',          # always forced — never comes from the form
+                source='admin',
                 price=price or None,
                 location=location or None,
                 end_date=parsed_end_date,
             )
+
             db.session.add(event)
             db.session.commit()
+
             flash('Event added successfully.')
+
             return redirect(url_for('admin.admin_dashboard'))
 
     return render_template(
@@ -117,7 +156,6 @@ def add_event():
         form_data=request.form if request.method == 'POST' else {}
     )
 # ─── Edit Event ───────────────────────────────────────────────────────────────
-
 @admin_bp.route('/admin/edit-event/<int:event_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -128,20 +166,40 @@ def edit_event(event_id):
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         category = request.form.get('category', '').strip()
-        city = request.form.get('city', '').strip()
+        city = "Riyadh"
         start_date_str = request.form.get('start_date', '').strip()
         time_str = request.form.get('time', '').strip()
         description = request.form.get('description', '').strip()
-        image = request.form.get('image', '').strip()
         official_link = request.form.get('official_link', '').strip()
         price = request.form.get('price', '').strip()
         location = request.form.get('location', '').strip()
         end_date_str = request.form.get('end_date', '').strip()
 
+        # Keep old image by default
+        image = event.image
+
+        # Handle uploaded image if admin selects a new one
+        image_file = request.files.get('image')
+
+        if image_file and image_file.filename != "":
+            filename = secure_filename(image_file.filename)
+
+            upload_folder = os.path.join(
+                current_app.root_path,
+                "static",
+                "uploads"
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+
+            image_path = os.path.join(upload_folder, filename)
+            image_file.save(image_path)
+
+            image = f"/static/uploads/{filename}"
+
         required = {
             'title': title,
             'category': category,
-            'city': city,
             'start_date': start_date_str,
             'time': time_str,
             'description': description,
@@ -151,17 +209,24 @@ def edit_event(event_id):
             if not value:
                 errors[field] = f'{field.replace("_", " ").capitalize()} is required.'
 
-        parsed_start_date = parsed_end_date = None
+        parsed_start_date = None
+        parsed_end_date = None
 
         if start_date_str and 'start_date' not in errors:
             try:
-                parsed_start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                parsed_start_date = datetime.strptime(
+                    start_date_str,
+                    '%Y-%m-%d'
+                ).date()
             except ValueError:
                 errors['start_date'] = 'Invalid start date format (use YYYY-MM-DD).'
 
         if end_date_str:
             try:
-                parsed_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                parsed_end_date = datetime.strptime(
+                    end_date_str,
+                    '%Y-%m-%d'
+                ).date()
             except ValueError:
                 errors['end_date'] = 'Invalid end date format (use YYYY-MM-DD).'
 
@@ -172,7 +237,7 @@ def edit_event(event_id):
             event.start_date = parsed_start_date
             event.time = time_str
             event.description = description
-            event.image = image or None
+            event.image = image
             event.official_link = official_link or None
             event.price = price or None
             event.location = location or None
@@ -183,8 +248,6 @@ def edit_event(event_id):
             return redirect(url_for('admin.admin_dashboard'))
 
     return render_template('admin/edit_event.html', event=event, errors=errors)
-
-
 # ─── Delete Event ─────────────────────────────────────────────────────────────
 
 @admin_bp.route('/admin/delete-event/<int:event_id>', methods=['POST'])
