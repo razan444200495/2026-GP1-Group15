@@ -19,7 +19,7 @@
       --border: rgba(122, 103, 88, 0.18);
       --shadow: 0 14px 35px rgba(83, 61, 43, 0.12);
     }
-
+   
     * {
       margin: 0;
       padding: 0;
@@ -501,7 +501,13 @@
       .signup-btn {
         width: 100%;
       }
+  
     }
+     
+    input[type="date"],
+    input[type="time"] {
+      direction: ltr;
+}
   </style>
 
   {% block extra_styles %}{% endblock %}
@@ -518,8 +524,7 @@
 
       {% if current_user.is_authenticated and current_user.role == 'admin' and request.endpoint not in ['auth.login', 'auth.signup'] %}
         <nav class="nav-links">
-  <a href="{{ url_for('events.home') }}">Home</a>
-  <a href="{{ url_for('events.events_page') }}">Events</a>
+  
   <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
   <a href="{{ url_for('admin.profile') }}">Profile</a>
 </nav>
