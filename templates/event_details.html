@@ -26,7 +26,13 @@
       <h1>{{ event.title }}</h1>
       <p><strong>Category:</strong> {{ event.category }}</p>
       <p><strong>City:</strong> {{ event.city }}</p>
-      <p><strong>Date:</strong> {{ event.date }}</p>
+      <p>
+  <strong>Date:</strong>
+  {{ event.start_date }}
+  {% if event.end_date %}
+    - {{ event.end_date }}
+  {% endif %}
+</p>
       <p><strong>Time:</strong> {{ event.time if event.time else 'Not available' }}</p>
     <p><strong>Price:</strong> {{ event.price if event.price else 'Not available' }}</p>
       <p><strong>Description:</strong> {{ event.description if event.description else 'No description available' }}</p>
